@@ -27,10 +27,23 @@ export interface DayConfig {
   active: boolean
 }
 
+export interface ThemeColors {
+  primary: string
+  accent: string
+}
+
+export interface ThemeConfig {
+  preset: string
+  colors: ThemeColors
+  borderRadius: "none" | "small" | "medium" | "large"
+  fontStyle: "modern" | "classic" | "rounded"
+}
+
 export interface AppConfig {
   companyName: string
   phone: string
   email: string
+  logo: string | null // URL ou base64 do logo
   services: ServiceOption[]
   timeSlots: TimeSlotConfig[]
   paymentMethods: PaymentMethodConfig[]
@@ -39,12 +52,47 @@ export interface AppConfig {
   blockedDates: string[] // datas bloqueadas no formato YYYY-MM-DD
   minAdvanceDays: number // dias mínimos de antecedência
   maxAdvanceDays: number // dias máximos de antecedência
+  theme: ThemeConfig
 }
+
+export const themePresets = {
+  blue: {
+    name: "Azul Profissional",
+    colors: { primary: "250", accent: "180" }
+  },
+  emerald: {
+    name: "Verde Esmeralda",
+    colors: { primary: "160", accent: "140" }
+  },
+  orange: {
+    name: "Laranja Energético",
+    colors: { primary: "30", accent: "45" }
+  },
+  rose: {
+    name: "Rosa Moderno",
+    colors: { primary: "350", accent: "330" }
+  },
+  slate: {
+    name: "Cinza Elegante",
+    colors: { primary: "220", accent: "200" }
+  },
+  amber: {
+    name: "Âmbar Quente",
+    colors: { primary: "45", accent: "30" }
+  }
+} as const
 
 const defaultConfig: AppConfig = {
   companyName: "HelmetClean",
   phone: "(11) 99999-9999",
   email: "contato@helmetclean.com.br",
+  logo: null,
+  theme: {
+    preset: "blue",
+    colors: { primary: "250", accent: "180" },
+    borderRadius: "medium",
+    fontStyle: "modern"
+  },
   services: [
     {
       id: "basica",
@@ -154,6 +202,42 @@ export function isDateBlocked(date: Date): boolean {
   const config = getConfig()
   const dateString = date.toISOString().split("T")[0]
   return config.blockedDates.includes(dateString)
+}
+
+export function getTheme(): ThemeConfig {
+  return getConfig().theme
+}
+
+export function getLogo(): string | null {
+  return getConfig().logo
+}
+
+export function getCompanyName(): string {
+  return getConfig().companyName
+}
+
+export function getThemeCSS(): string {
+  const theme = getTheme()
+  const primaryHue = theme.colors.primary
+  const accentHue = theme.colors.accent
+  
+  let radius = "0.625rem"
+  switch (theme.borderRadius) {
+    case "none": radius = "0"; break
+    case "small": radius = "0.375rem"; break
+    case "medium": radius = "0.625rem"; break
+    case "large": radius = "1rem"; break
+  }
+  
+  return `
+    :root {
+      --primary: oklch(0.55 0.2 ${primaryHue});
+      --primary-foreground: oklch(0.98 0 0);
+      --accent: oklch(0.7 0.15 ${accentHue});
+      --accent-foreground: oklch(0.15 0.02 ${accentHue});
+      --radius: ${radius};
+    }
+  `
 }
 
 export function isDateSelectable(date: Date): boolean {

@@ -1,21 +1,50 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import Image from "next/image"
+import { useState, useEffect } from "react"
 import { Menu, X, Bike, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { getLogo, getCompanyName } from "@/lib/config"
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [logo, setLogo] = useState<string | null>(null)
+  const [companyName, setCompanyName] = useState("HelmetClean")
+
+  useEffect(() => {
+    setLogo(getLogo())
+    setCompanyName(getCompanyName())
+
+    const handleThemeUpdate = () => {
+      setLogo(getLogo())
+      setCompanyName(getCompanyName())
+    }
+
+    window.addEventListener("themeUpdate", handleThemeUpdate)
+    return () => window.removeEventListener("themeUpdate", handleThemeUpdate)
+  }, [])
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
-            <Bike className="h-5 w-5 text-primary-foreground" />
-          </div>
-          <span className="text-xl font-bold text-foreground">HelmetClean</span>
+          {logo ? (
+            <Image
+              src={logo}
+              alt={companyName}
+              width={140}
+              height={40}
+              className="h-10 w-auto object-contain"
+            />
+          ) : (
+            <>
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
+                <Bike className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <span className="text-xl font-bold text-foreground">{companyName}</span>
+            </>
+          )}
         </Link>
 
         {/* Desktop Navigation */}
